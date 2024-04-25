@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 click = "^8.1.7"
+adafruit-circuitpython-ads1x15 = "^2.2.25"
+adafruit-blinka = "^8.39.1"
+numpy = "^1.26.4"
 
 
 [build-system]
