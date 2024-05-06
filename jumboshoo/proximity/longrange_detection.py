@@ -1,4 +1,5 @@
-from cv2 import fastNlMeansDenoising
+import matplotlib.pyplot as plt
+from cv2 import MEDIA_FORMAT_GRAY, fastNlMeansDenoising
 import numpy as np
 import time
 import board
@@ -28,6 +29,9 @@ class LongProximity:
         self.collection_thread.start()
         print_info_message("Sampling ADC in the background")
 
+        self.disp = Display()
+        # self.disp.start()
+
     def __del__(self):
         self.collecting = False
         self.collection_thread.join()
@@ -40,14 +44,32 @@ class LongProximity:
                 self.the_voltage_array.pop(0)
             time.sleep(1/self.sample_rate)
 
+    def plot_fft(self):
+        n = len(self.the_voltage_array)
+        if n == 0:
+            return 0.00
+
+        the_voltage_array_copy = pad_to_nearest_power_of_two(self.the_voltage_array.copy())
+
+        fft_values = np.fft.fft(the_voltage_array_copy)
+        magnitude = np.abs(fft_values)**2
+
+        freq = np.fft.fftfreq(n, d=1/self.sample_rate)
+        idx = np.argsort(freq)
+
+        plt.plot(freq[idx], magnitude[idx])
+
     def get_instant_frequency(self) -> float:
         n = len(self.the_voltage_array)
         if n == 0:
             return 0.00
 
+        the_voltage_array_copy = pad_to_nearest_power_of_two(self.the_voltage_array.copy())
+        
+        fft_values = np.fft.fft(the_voltage_array_copy)
+        magnitude = np.abs(fft_values)**2
+
         freq = np.fft.fftfreq(n, d=1/self.sample_rate)
-        fft_values = fft(self.the_voltage_array)
-        magnitude = np.abs(fft_values)
 
         peaks, _ = find_peaks(magnitude[:n//2])
 
@@ -55,8 +77,34 @@ class LongProximity:
             print_warning_message("LongProximity: No peak found")
             return 0.00
 
-        frequencies = []
+        max = 0.00
+        predominant_frequency = 0.00
         for peak in peaks:
-            frequencies += [freq[peak]]
+            if magnitude[peak] > max:
+                predominant_frequency = freq[peak]
+                max = magnitude[peak]
 
-        return(max(frequencies))
+        max_str = "%0.2f" % max
+        predominant_frequency_str = "%02f" % predominant_frequency
+        print_info_message(f"Highest amplitude: {max_str} Predominant frequency: {predominant_frequency_str}")
+        
+        return float(predominant_frequency)
+
+def pad_to_nearest_power_of_two(array):
+    # Calculate the original length of the array
+    original_length = len(array)
+    
+    # Calculate the nearest power of two
+    nearest_power_of_two = 2**np.ceil(np.log2(original_length)).astype(int)
+    
+    # Calculate the total amount of padding needed
+    total_padding = nearest_power_of_two - original_length
+    
+    # Calculate padding for both sides
+    padding_left = total_padding // 2
+    padding_right = total_padding - padding_left
+    
+    # Pad the array with zeros on both sides
+    padded_array = np.pad(array, (padding_left, padding_right), mode='constant')
+    
+    return padded_array

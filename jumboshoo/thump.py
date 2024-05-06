@@ -1,3 +1,4 @@
+import random
 import threading
 from pathlib import Path
 import pygame
@@ -8,8 +9,9 @@ class Thump:
     def __init__(self, **kwargs):
         print_context_message("Initializing the Thumper")
 
+        self.generate_thumper_sine: bool = bool(kwargs.get('thumper_use_sine', False))
         self.audio_dir: Path = Path(str(kwargs.get('audio_dir', '/home/jumboshoo1/dev/jumboshoo/JumboShoo/audio')))
-        if self.audio_dir.is_dir():
+        if not self.audio_dir.is_dir():
             raise Exception(f"{kwargs.get('audio_dir', '/home/jumboshoo1/dev/jumboshoo/JumboShoo/audio')} is not a directory")
 
         self.tone_frequency: int = kwargs.get('tone_frequency', 440)
@@ -38,14 +40,21 @@ class Thump:
         self.thump_thread = None
 
     def _thump(self):
-        # Generate the tone
-        self.audio_dir.
-        pygame.mixer.music.load()
-        # t = np.linspace(0, self.tone_duration_sec, int(self.audio_sample_rate * self.tone_duration_sec), False)
-        # tone = np.sin(self.tone_frequency * 2 * np.pi * t)
-        # sound = pygame.sndarray.make_sound((32767 * self.volume * tone).astype(np.int16))
-        # while self.thumping:
-        #     sound.play(-1)  # The '-1' argument makes the sound play indefinitely
-        #     pygame.time.wait(int(self.tone_duration_sec * 1000))  # Wait for the duration of the tone in milliseconds
-        #     sound.stop()
+
+        if self.generate_thumper_sine:
+            print_context_message("Generating sine tone")
+            t = np.linspace(0, self.tone_duration_sec, int(self.audio_sample_rate * self.tone_duration_sec), False)
+            tone = np.sin(self.tone_frequency * 2 * np.pi * t)
+            sound = pygame.sndarray.make_sound((32767 * self.volume * tone).astype(np.int16))
+            while self.thumping:
+                sound.play(-1)  # The '-1' argument makes the sound play indefinitely
+                pygame.time.wait(int(self.tone_duration_sec * 1000))  # Wait for the duration of the tone in milliseconds
+                sound.stop()
+        else:
+            files = list(self.audio_dir.glob('*'))
+            random_file = random.choice(files) if files else None
+            print_context_message(f"Using the audio message called {random_file}")
+            while self.thumping:
+                pygame.mixer.music.load(str(random_file))
+                pygame.mixer.music.play(-1)
 

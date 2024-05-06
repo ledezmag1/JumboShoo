@@ -59,5 +59,3 @@ class CloseProximity:
 
         return elephant_detected
         
-
-
