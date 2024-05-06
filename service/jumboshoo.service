@@ -1,0 +1,17 @@
+[Unit]
+Description=Service that runs JumboShoo
+After=multi-user.target
+
+[Service]
+Type=simple
+LimitNOFILE=16384
+ExecStart=python -m jumboshoo main
+ExecReload=/bin/kill -HUP $MAINPID
+LimitCORE=infinity
+Restart=always
+Environment="PYTHONPATH=/home/jumboshoo1/dev/jumboshoo/JumboShoo"
+StandardOutput=file:/home/jumboshoo1/dev/jumboshoo/JumboShoo/jumboshoo.log
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
