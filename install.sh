@@ -10,8 +10,11 @@ fi
 
 cd "$jumboshoo_git_dir"
 
-pip install pyinstaller poetry
-pip install -r requirements.txt
+pip install pyinstaller poetry --break-system-packages
+pip install opencv-python --break-system-packages
+pip install ultralytics --break-system-packages
+pip install cvzone --break-system-packages
+pip install -r requirements.txt --break-system-packages
 
 echo "Creating symbolic link from $supportdir/estts.service to /etc/systemd/system/"
 sudo ln -s "$jumboshoo_git_dir/service/jumboshoo.service" /etc/systemd/system/ || {
@@ -21,6 +24,3 @@ sudo ln -s "$jumboshoo_git_dir/service/jumboshoo.service" /etc/systemd/system/ |
 
 sudo systemctl daemon-reload
 sudo systemctl reset-failed
-sudo systemctl enable jumboshoo
-sudo systemctl start jumboshoo
-
