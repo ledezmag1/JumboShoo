@@ -1,12 +1,11 @@
 import time
-import os
 import sys
 import threading
 
 class Display:
     def __init__(self):
         self.running = False
-        self.thread = None
+        self.thread: threading.Thread | None = None
 
         self.string1 = ""
         self.string2 = ""
@@ -32,6 +31,6 @@ class Display:
         """Stops the loading animation and clears the screen."""
         if self.running:
             self.running = False
-            self.thread.join()  # Wait for the animation thread to finish
-            # print("\033c", end="")
+            if self.thread is not None:
+                self.thread.join()
             sys.stdout.write(" Done\n")
