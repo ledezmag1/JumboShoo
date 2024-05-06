@@ -27,3 +27,9 @@ python -m jumboshoo thump
 python -m jumboshoo main
 ```
 
+If you're using one of the SD cards that isn't the main one that went to Africa, run this command:
+```shell
+sudo systemctl enable jumboshoo
+sudo systemctl start jumboshoo
+```
+
